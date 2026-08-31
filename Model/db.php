@@ -29,6 +29,7 @@ class Database
             $this->createUsersTable($connection);
             $this->createSettingsTable($connection);
             $this->createOrdersTable($connection);
+            $this->createBooksTable($connection);
             $this->createDefaultAdmin($connection);
 
             return $connection;
@@ -118,6 +119,21 @@ class Database
                 customer_id INT NOT NULL,
                 total_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
                 status VARCHAR(20) NOT NULL DEFAULT 'pending',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )"
+        );
+    }
+
+    private function createBooksTable(PDO $connection): void
+    {
+        $connection->exec(
+            "CREATE TABLE IF NOT EXISTS books (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                title VARCHAR(255) NOT NULL,
+                author VARCHAR(255) NOT NULL,
+                category VARCHAR(100),
+                price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+                stock INT NOT NULL DEFAULT 0,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )"
         );

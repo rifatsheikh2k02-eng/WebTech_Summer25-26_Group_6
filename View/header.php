@@ -13,6 +13,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 <div class="navbar">
     <a href="admin_dashboard.php" class="<?php echo ($activePage ?? '') === 'dashboard' ? 'active' : ''; ?>">Dashboard</a>
+    <a href="admin_dashboard.php?section=books" class="<?php echo ($activePage ?? '') === 'books' ? 'active' : ''; ?>">Add Books</a>
     <a href="admin_dashboard.php?section=users" class="<?php echo ($activePage ?? '') === 'users' ? 'active' : ''; ?>">Users</a>
     <a href="admin_dashboard.php?section=settings" class="<?php echo ($activePage ?? '') === 'settings' ? 'active' : ''; ?>">Settings</a>
 </div>

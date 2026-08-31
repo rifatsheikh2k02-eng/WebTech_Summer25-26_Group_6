@@ -4,6 +4,7 @@ session_start();
 
 require_once '../Model/db.php';
 require_once '../Model/UserModel.php';
+require_once '../Model/BookModel.php';
 
 if (($_SESSION['role'] ?? '') !== 'Admin') {
     header('Location: ../View/login.php');
@@ -25,6 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $database = new Database();
 $conn = $database->connect();
 $userModel = new UserModel($conn);
+$bookModel = new BookModel($conn);
 
 $action = $_POST['action'] ?? '';
 $roles = ['Admin', 'Customer', 'Deliveryman'];
@@ -126,10 +128,54 @@ try {
         header('Location: ../View/login.php');
         exit;
     }
+
+    if ($action === 'create_book') {
+        $title = trim($_POST['title'] ?? '');
+        $author = trim($_POST['author'] ?? '');
+        $category = trim($_POST['category'] ?? '');
+        $price = (float) ($_POST['price'] ?? 0);
+        $stock = (int) ($_POST['stock'] ?? 0);
+
+        if ($title === '' || $author === '' || $price < 0 || $stock < 0) {
+            returnToDashboard('Please provide valid book information.', true, 'books');
+        }
+
+        $bookModel->createBook($title, $author, $category, $price, $stock);
+        returnToDashboard('Book added successfully.', false, 'books');
+    }
+
+    if ($action === 'update_book') {
+        $bookId = (int) ($_POST['book_id'] ?? 0);
+        $title = trim($_POST['title'] ?? '');
+        $author = trim($_POST['author'] ?? '');
+        $category = trim($_POST['category'] ?? '');
+        $price = (float) ($_POST['price'] ?? 0);
+        $stock = (int) ($_POST['stock'] ?? 0);
+
+        if ($bookId <= 0 || $title === '' || $author === '' || $price < 0 || $stock < 0) {
+            returnToDashboard('Please provide valid book information.', true, 'books');
+        }
+
+        $bookModel->updateBook($bookId, $title, $author, $category, $price, $stock);
+        returnToDashboard('Book updated successfully.', false, 'books');
+    }
+
+    if ($action === 'delete_book') {
+        $bookId = (int) ($_POST['book_id'] ?? 0);
+
+        if ($bookId <= 0) {
+            returnToDashboard('Invalid book ID.', true, 'books');
+        }
+
+        $bookModel->deleteBook($bookId);
+        returnToDashboard('Book deleted.', false, 'books');
+    }
 } catch (PDOException $exception) {
     $errorSection = in_array($action, ['create_user', 'update_role', 'delete_user'], true)
         ? 'users'
-        : 'settings';
+        : (in_array($action, ['create_book', 'update_book', 'delete_book'], true)
+            ? 'books'
+            : 'settings');
     returnToDashboard('Database request failed.', true, $errorSection);
 }
 

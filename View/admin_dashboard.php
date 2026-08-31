@@ -11,10 +11,12 @@ if (($_SESSION['role'] ?? '') !== 'Admin') {
 require_once __DIR__ . '/../Model/db.php';
 require_once __DIR__ . '/../Model/UserModel.php';
 require_once __DIR__ . '/../Model/OrderModel.php';
+require_once __DIR__ . '/../Model/BookModel.php';
 
 $conn = (new Database())->connect();
 $userModel = new UserModel($conn);
 $orderModel = new OrderModel($conn);
+$bookModel = new BookModel($conn);
 
 $totalUsers = count($userModel->getAllUsers());
 $totalAdmins = 0;
@@ -33,10 +35,13 @@ $monthlyRevenue = $orderModel->getMonthlyRevenue();
 $totalOrders = $orderModel->getTotalOrders();
 $deliveredOrders = $orderModel->getDeliveredOrdersCount();
 
+$totalBooks = $bookModel->getTotalBooks();
+$totalStockValue = $bookModel->getTotalStockValue();
+
 $adminName = htmlspecialchars($_SESSION['name'] ?? 'Admin');
 $section = $_GET['section'] ?? 'dashboard';
 
-if (!in_array($section, ['dashboard', 'users', 'settings'], true)) {
+if (!in_array($section, ['dashboard', 'books', 'users', 'settings'], true)) {
     $section = 'dashboard';
 }
 
@@ -47,6 +52,11 @@ unset($_SESSION['admin_message'], $_SESSION['admin_error']);
 $users = [];
 if ($section === 'users') {
     $users = $userModel->getAllUsers();
+}
+
+$books = [];
+if ($section === 'books') {
+    $books = $bookModel->getAllBooks();
 }
 
 $admin = [];
@@ -86,6 +96,7 @@ $activePage = $section;
             </div>
             
             <div class="quick-links">
+                <a class="quick-link" href="admin_dashboard.php?section=books"><strong>Manage Books</strong><span>View, add, edit, or delete books.</span></a>
                 <a class="quick-link" href="admin_dashboard.php?section=users"><strong>Manage Users</strong><span>View, add, change roles, or delete users.</span></a>
                 <a class="quick-link" href="admin_dashboard.php?section=settings"><strong>Settings & Account</strong><span>Edit profile, password, profit rate, or delete account.</span></a>
             </div>
@@ -116,6 +127,37 @@ $activePage = $section;
                 <form class="add-user" style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 22px; padding-top: 20px; border-top: 1px solid #dbe5e0;" method="POST" action="../Controller/AdminController.php">
                     <div><h3>Add New User</h3><label for="new_name">Full Name</label><input id="new_name" name="name" required><label for="new_username">Username</label><input id="new_username" name="username" required></div>
                     <div><h3>&nbsp;</h3><label for="new_password">Password</label><input id="new_password" type="password" name="password" minlength="5" required><label for="new_role">Role</label><select id="new_role" name="role"><option>Customer</option><option>Deliveryman</option><option>Admin</option></select><input type="hidden" name="action" value="create_user"><button type="submit">Add User</button></div>
+                </form>
+            </section>
+
+        <?php elseif ($section === 'books'): ?>
+            <section class="panel">
+                <h2>Book Management</h2>
+                <?php if (!$books): ?><p>No books have been added yet.</p><?php endif; ?>
+                <?php foreach ($books as $book): ?>
+                    <div class="user">
+                        <div><strong><?php echo htmlspecialchars($book['title']); ?></strong><br><small>by <?php echo htmlspecialchars($book['author']); ?> - <?php echo htmlspecialchars($book['category'] ?? 'N/A'); ?> - ৳<?php echo number_format($book['price'], 2); ?> - Stock: <?php echo (int) $book['stock']; ?></small></div>
+                        <div class="user-actions">
+                            <form method="POST" action="../Controller/AdminController.php" style="display: inline;">
+                                <input type="hidden" name="action" value="update_book">
+                                <input type="hidden" name="book_id" value="<?php echo (int) $book['id']; ?>">
+                                <input type="text" name="title" value="<?php echo htmlspecialchars($book['title']); ?>" required style="width: 150px;">
+                                <input type="text" name="author" value="<?php echo htmlspecialchars($book['author']); ?>" required style="width: 120px;">
+                                <input type="text" name="category" value="<?php echo htmlspecialchars($book['category'] ?? ''); ?>" style="width: 100px;">
+                                <input type="number" name="price" step="0.01" value="<?php echo $book['price']; ?>" required style="width: 80px;">
+                                <input type="number" name="stock" value="<?php echo (int) $book['stock']; ?>" required style="width: 60px;">
+                                <button type="submit">Save</button>
+                            </form>
+                            <form method="POST" action="../Controller/AdminController.php" onsubmit="return confirm('Delete this book?');" style="display: inline;">
+                                <input type="hidden" name="action" value="delete_book"><input type="hidden" name="book_id" value="<?php echo (int) $book['id']; ?>"><button class="danger" type="submit">Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+
+                <form class="add-user" style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 22px; padding-top: 20px; border-top: 1px solid #dbe5e0;" method="POST" action="../Controller/AdminController.php">
+                    <div><h3>Add New Book</h3><label for="new_title">Title</label><input id="new_title" name="title" required><label for="new_author">Author</label><input id="new_author" name="author" required><label for="new_category">Category</label><input id="new_category" name="category"></div>
+                    <div><h3>&nbsp;</h3><label for="new_price">Price (৳)</label><input id="new_price" type="number" name="price" step="0.01" min="0" required><label for="new_stock">Stock</label><input id="new_stock" type="number" name="stock" min="0" required><input type="hidden" name="action" value="create_book"><button type="submit">Add Book</button></div>
                 </form>
             </section>
 
