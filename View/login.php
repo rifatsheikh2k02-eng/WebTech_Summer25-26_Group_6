@@ -1,68 +1,230 @@
 <?php
+
 session_start();
 
-if (($_SESSION['role'] ?? '') === 'Admin') {
-    header('Location: admin_dashboard.php');
-    exit;
+include "../Controller/loginValidation.php";
+
+$signupMessage = "";
+
+if (isset($_SESSION["signup_success"])) {
+
+    $signupMessage = $_SESSION["signup_success"];
+
+    unset($_SESSION["signup_success"]);
 }
 
-$loginError = $_SESSION['login_error'] ?? '';
-$loginMessage = $_SESSION['login_message'] ?? '';
-unset($_SESSION['login_error'], $_SESSION['login_message']);
-$rememberedUser = htmlspecialchars($_COOKIE['remember_user'] ?? '');
 ?>
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-US">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" type="text/css" href="styles.php">
-    <title>Online Bookshop - Admin Login</title>
-    <script>
-    function collect_data() {
-        let u = document.getElementById("username").value.trim();
-        let p = document.getElementById("password").value.trim();
-        let msg = "";
-        if(u.length < 3) msg += "Username must be at least 3 characters\n";
-        if(p.length < 5) msg += "Password must be at least 5 characters\n";
-        if(msg) { alert(msg); return false; }
-        return true;
-    }
-    </script>
+
+    <link rel="stylesheet" href="../Design/login.css">
+
+    <script src="../JS/login.js"></script>
+
+    <title>Login</title>
+
 </head>
+
 <body>
-    <?php include 'header.php'; ?>
-    <main class="main" style="max-width: 400px; margin-top: 80px;">
-        <h2 style="margin-bottom: 20px; color: #245a45;">Admin Login</h2>
-        
-        <?php if ($loginError !== ''): ?>
-            <div class="message error"><?php echo htmlspecialchars($loginError); ?></div>
-        <?php endif; ?>
-        <?php if ($loginMessage !== ''): ?>
-            <div class="message"><?php echo htmlspecialchars($loginMessage); ?></div>
-        <?php endif; ?>
-        
-        <form method="POST" action="../Controller/AuthController.php" onsubmit="return collect_data()">
-            <input type="hidden" name="action" value="login">
-            <div class="form-group">
-                <label for="username">Username:</label>
-                <input type="text" id="username" name="username" value="<?php echo $rememberedUser; ?>" required>
-            </div>
-            <div class="form-group">
-                <label for="password">Password:</label>
-                <input type="password" id="password" name="password" required>
-            </div>
-            <div class="form-group">
-                <label>
-                    <input type="checkbox" id="remember" name="remember" value="1"> Remember Me
-                </label>
-            </div>
-            <button type="submit" class="btn" style="width: 100%;">Login</button>
-        </form>
-        
-        <p style="margin-top: 20px; text-align: center;">
-            Default: admin / admin
-        </p>
-    </main>
+
+<div class="container">
+
+    <?php
+
+    if ($signupMessage != "") {
+
+        echo "<p style='color: green; font-weight: bold;'>"
+            . htmlspecialchars($signupMessage)
+            . "</p>";
+    }
+
+    if (!empty($message)) {
+
+        echo "<p style='color: red; font-weight: bold;'>"
+            . htmlspecialchars($message)
+            . "</p>";
+    }
+
+    ?>
+
+    <form method="POST" onsubmit="return collect_data()">
+
+        <fieldset>
+
+            <legend>Login to BoiGhor</legend>
+
+            <table>
+
+                <tr>
+
+                    <td>
+
+                        <label for="loginAs">
+                            Login as:
+                        </label>
+
+                    </td>
+
+                    <td>
+
+                        <select id="loginAs" name="loginAs">
+
+                            <option value="Default"
+                                <?php
+                                if ($loginAs === "" || $loginAs === "Default") {
+                                    echo "selected";
+                                }
+                                ?>>
+                                Select Role
+                            </option>
+
+                            <option value="Admin"
+                                <?php
+                                if ($loginAs === "Admin") {
+                                    echo "selected";
+                                }
+                                ?>>
+                                Admin
+                            </option>
+
+                            <option value="Customer"
+                                <?php
+                                if ($loginAs === "Customer") {
+                                    echo "selected";
+                                }
+                                ?>>
+                                Customer
+                            </option>
+
+                            <option value="Delivery Man"
+                                <?php
+                                if ($loginAs === "Delivery Man") {
+                                    echo "selected";
+                                }
+                                ?>>
+                                Delivery Man
+                            </option>
+
+                        </select>
+
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <td>
+
+                        <label for="userEmail">
+                            Email:
+                        </label>
+
+                    </td>
+
+                    <td>
+
+                        <input
+                            type="email"
+                            id="userEmail"
+                            name="userEmail"
+                            value="<?php echo htmlspecialchars($email); ?>"
+                            placeholder="Enter your Email"
+                        >
+
+                        <p id="emailError"></p>
+
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <td>
+
+                        <label for="password">
+                            Password:
+                        </label>
+
+                    </td>
+
+                    <td>
+
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                        >
+
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <td>
+
+                        <input
+                            type="checkbox"
+                            id="rememberMe"
+                            name="rememberMe"
+                            value="1"
+                            <?php
+                            if ($remember) {
+                                echo "checked";
+                            }
+                            ?>
+                        >
+
+                        <label for="rememberMe">
+                            <font color="red">
+                                Remember Me
+                            </font>
+                        </label>
+
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <td>
+
+                        <input
+                            type="submit"
+                            id="logIn"
+                            name="logIn"
+                            value="Log In"
+                        >
+
+                        <br>
+                        <br>
+
+                        <button
+                            type="button"
+                            id="signUP"
+                            name="signUP"
+                            onclick="window.location.href='signup.php'"
+                        >
+                            Sign Up
+                        </button>
+
+                    </td>
+
+                </tr>
+
+            </table>
+
+        </fieldset>
+
+    </form>
+
+</div>
+
 </body>
+
 </html>
