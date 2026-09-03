@@ -1,4 +1,4 @@
-function validateEditBook() {
+function validateAddBook() {
 
     let title = document.getElementById("title").value.trim();
     let author = document.getElementById("author").value.trim();
@@ -65,26 +65,23 @@ function validateEditBook() {
         return false;
     }
 
-    if (image) {
+    if (!image) {
+        alert("Please select a book image.");
+        return false;
+    }
 
-        let allowedTypes = [
-            "image/jpeg",
-            "image/png",
-            "image/gif",
-            "image/webp"
-        ];
+    let allowedTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/gif",
+        "image/webp"
+    ];
 
-        if (!allowedTypes.includes(image.type)) {
-            alert(
-                "Only JPG, JPEG, PNG, GIF and WEBP images are allowed."
-            );
-            return false;
-        }
-
-        if (image.size > 5 * 1024 * 1024) {
-            alert("Image size must be less than 5 MB.");
-            return false;
-        }
+    if (!allowedTypes.includes(image.type)) {
+        alert(
+            "Only JPG, JPEG, PNG, GIF and WEBP images are allowed."
+        );
+        return false;
     }
 
     return true;
